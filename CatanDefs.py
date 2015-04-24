@@ -171,7 +171,7 @@ def moveDirection(direction):
 	global location
 
 	if direction in hexes[location]:
-		os.system('clear')
+		os.system('cls')
 		print 'You traveled to the %s.' % direction
 		location = hexes[location][direction]
 		hexName(location)
