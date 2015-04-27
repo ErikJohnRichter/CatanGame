@@ -168,6 +168,9 @@ showExits = True
 
 import cmd, textwrap, os
 
+def cls():
+    os.system(['clear','cls'][os.name == 'nt'])
+
 def hexName(loc):
 	# Hex Name
 	print '-' * (len(loc)+4)
@@ -203,8 +206,7 @@ def moveDirection(direction):
 	global location
 
 	if direction in hexes[location]:
-		os.system('cls')
-		os.system('clear')
+		cls()
 		print 'You traveled to the %s.' % direction
 		location = hexes[location][direction]
 		hexName(location)
