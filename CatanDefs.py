@@ -118,7 +118,7 @@ hexes = {
 		West: 'More Fog',
 		Ground: ['Fog']},
 	'More Fog': {
-		Description: 'You are lost in the fog! \nYou need look for something to guide you back! \nBe careful for terrain...rocky islands were rumored to be in this area.',
+		Description: 'You are lost in the fog! \nYou need to look for something to guide you back! \nBe careful for terrain...rocky islands were rumored to be in this area.',
 		Lighthouse: 'Sea of Catan',
 		North: 'Dense Fog ',
 		South: 'Dense Fog',
@@ -196,7 +196,7 @@ resources = {
 		Word: ['water']},
 	'Fog': {
 		Name: 'Fog',
-		Desc: 'Actually, there is fog everywhere! \nYou better find something to help you!',
+		Desc: 'There is fog everywhere! \nYou better find something to help you!',
 		Word: ['fog']},
 	}
 
@@ -374,6 +374,8 @@ class explore(cmd.Cmd):
 	# View Map
 	def do_map(self, arg):
 		if 'Map' in inventory:
+			cls()
+			print hexName(location)
 			print '                                          '
 			print '              --MAP of CATAN--               N'
 			print '    Port                                     ^'
