@@ -6,9 +6,12 @@ West = 'west'
 Port = 'port'
 Lighthouse = 'lighthouse'
 Ground = 'ground'
+Down = 'down'
+Up = 'up'
 Desc = 'desc'
 Name = 'name'
 Inventory = 'inventory'
+Map = 'Map'
 Takeable = 'takeable'
 Word = 'word'
 
@@ -37,7 +40,12 @@ hexes = {
 		Description: 'Deep in the Earth, cold, dank air wafts upward. Angry dwarves are known to inhabit these dark halls.',
 		South: 'Forest',
 		West: 'Great Northern Mountains',
+		Down: 'Mine Cavern',
 		Ground: ['Ore']},
+	'Mine Cavern': {
+		Description: 'It is said the mining dwarves hold the Magic of Catan.',
+		Up: 'Ore Mines',
+		Ground: ['Box']},
 	'Wheat Fields': {
 		Description: '-soft, warm sun shines down- The wheat waves in the wind before you. You are tempted to frolick.',
 		North: 'City of Northumberland',
@@ -75,7 +83,7 @@ hexes = {
 		Ground: ['Water']},
 	'North Sea of Catan': {
 		Description: 'A true sailor!',
-		North: 'Dense Fog',
+		North: 'Fog',
 		South: 'Sea of Catan',
 		East: 'Fog',
 		West: 'Fog',
@@ -94,14 +102,32 @@ hexes = {
 		East: 'Fog',
 		West: 'Sea of Catan',
 		Ground: ['Water']},
-	'Dense Fog': {
-		Description: 'You just discovered a secret island hidden by the fog!',
-		South: 'North Sea of Catan',
-		Ground: ['Gold']},
-	'Fog' : {
+	'Dense Fog ': {
+		Description: '|-- You just discovered a island hidden in the fog! --|',
+		North: 'Fog',
+		South: 'Fog',
+		East: 'Fog',
+		West: 'Fog',
+		Ground: ['Key']},
+	'Fog': {
 		Description: 'You just entered a dense patch of fog.',
 		Lighthouse: 'Sea of Catan',
-		Ground: ['Nothing']},
+		North: 'More Fog',
+		South: 'More Fog',
+		East: 'More Fog',
+		West: 'More Fog',
+		Ground: ['Fog']},
+	'More Fog': {
+		Description: 'You are lost in the fog! \nYou need look for something to guide you back! \nBe careful for terrain...rocky islands were rumored to be in this area.',
+		Lighthouse: 'Sea of Catan',
+		North: 'Dense Fog ',
+		South: 'Dense Fog',
+		East: 'Dense Fog',
+		West: 'Dense Fog',
+		Ground: ['Fog']},
+	'Dense Fog': {
+		Description: '',
+		Ground: ['Fog']},
 	}
 
 # Dictionary for Terrain Resources
@@ -127,6 +153,11 @@ resources = {
 		Name: 'a Chunk of Ore',
 		Desc: 'Forged deep in the Earth, Ore is used to make tools...and weapons.',
 		Word: ['ore']},
+	'Box': {
+		Name: 'a Locked Box',
+		Desc: 'This box appears to need a key to open it.',
+		Takeable: False,
+		Word: ['box']},
 	'Wheat': {
 		Name: 'a Shaff of Wheat',
 		Desc: 'Born of the land to feed your hunger',
@@ -139,6 +170,10 @@ resources = {
 		Name: 'a Lost Sheep',
 		Desc: 'Used it for wool or food. Sheep are valuable resources.',
 		Word: ['sheep', 'lost sheep']},
+	'Key': {
+		Name: 'an old rusty key',
+		Desc: ' ',
+		Word: ['key']},
 	'Gold': {
 		Name: 'a Gold Coin',
 		Desc: 'This is currency of the land. Beware...others value it just as much as you!',
@@ -159,6 +194,10 @@ resources = {
 		Name: 'Water',
 		Desc: 'Actually, there is water everywhere!',
 		Word: ['water']},
+	'Fog': {
+		Name: 'Fog',
+		Desc: 'Actually, there is fog everywhere! \nYou better find something to help you!',
+		Word: ['fog']},
 	}
 
 # Default Location and Inventory
@@ -169,33 +208,49 @@ showExits = True
 import cmd, textwrap, os
 
 def cls():
+	# Clears Screen
     os.system(['clear','cls'][os.name == 'nt'])
 
 def hexName(loc):
 	# Hex Name
-	print '-' * (len(loc)+4)
-	print '|',(loc),'|'
-	print '-' * (len(loc)+4)
-
-	# Hex Description
-	print '\n'.join(textwrap.wrap(hexes[loc][Description]))
-
-	if len(hexes[loc][Ground]) > 0:
+	if location == 'Dense Fog':
+		for each in range (30):
+			print ''
+		print '   You wandered, lost, in the fog for days.'
 		print ''
-		for item in hexes[loc][Ground]:
-			print "There is", resources[item][Name], "on the ground."
-			print resources[item][Desc]
+		print '          You just died of thirst.'
+		print ''
+		for each in range (10):
+			print ''
+		quit()
 	else:
 		print ''
+		print '-' * (len(loc)+4)
+		print '|',' '* (len(loc)),'|'
+		print '|',(loc),'|'
+		print '|',' '* (len(loc)),'|'
+		print '-' * (len(loc)+4)
+		print ''
+
+		# Hex Description
+		print '\n'.join(textwrap.wrap(hexes[loc][Description]))
+
+		if len(hexes[loc][Ground]) > 0:
+			print ''
+			for item in hexes[loc][Ground]:
+				print "There is", resources[item][Name], "on the ground."
+				print resources[item][Desc]
+		else:
+			print ''
 	
 	# Surrounding Hexes
 	exit = []
-	for direction in (North, South, East, West, Port):
+	for direction in (North, South, East, West, Port, Down, Up):
 		if direction in hexes[loc].keys():
 			exit.append(direction.title())
 	print''
 	if showExits:
-		for direction in (North, South, East, West, Port):
+		for direction in (North, South, East, West, Port, Down, Up):
 			if direction in hexes[location]:
 				print'%s: %s' % (direction.title(), hexes[location][direction])
 	else:
@@ -278,6 +333,12 @@ class explore(cmd.Cmd):
 		else:
 			print 'You need a boat to enter the seas.'
 
+	def do_down(self, arg):
+		moveDirection('down')
+
+	def do_up(self, arg):
+		moveDirection('up')
+
 	# Allows for Caps or Lower
 	do_North = do_north
 	do_South = do_south
@@ -285,6 +346,8 @@ class explore(cmd.Cmd):
 	do_West = do_west
 	do_Port = do_port
 	do_Lighthouse = do_lighthouse
+	do_Down = do_down
+	do_Up = do_up
 
 	# View Inventory
 	def do_inventory(self, arg):
@@ -308,6 +371,63 @@ class explore(cmd.Cmd):
 
 	do_inv = do_inventory
 
+	# View Map
+	def do_map(self, arg):
+		if 'Map' in inventory:
+			print '                                          '
+			print '              --MAP of CATAN--               N'
+			print '    Port                                     ^'
+			print '  ---||-----------------------------------   |'
+			print '  |            |            |            |'
+			print '  |  City of   |   North    |    Ore     |'
+			print '  |    the     |  Mountain  |   Mines    |'
+			print '  |   North    |            |            |'
+			print '  |            |            |            |'
+			print '  ----------------------------------------'
+			print '  |            |            |            |'
+			print '  |   Wheat    |  Catanian  |    Dark    |'
+			print '  |   Field    |   Desert   |   Forest   |'
+			print '  |            |            |            |'
+			print '  |            |            |            |'
+			print '  ----------------------------------------'
+			print '  |            |            |            |'
+			print '  |            |            |   Brick    |'
+			print '  | Settlement |  Pastures  |  Factory   |'
+			print '  |            |            |            |'
+			print '  |            |            |            |'
+			print '  ----------------------------------------'
+			print '  --> You are in the %s' % location
+			print '                                          '
+
+		else:
+			print 'You do not have a map.'
+
+	do_Map = do_map
+
+	# Unlock Box
+	def do_unlock(self, arg):
+		if 'Box' in inventory:
+			for each in range (30):
+				print ''
+			print '           ********************************'
+			print '                                           '
+			print '                   You now possess         '
+			print '                         the               '
+			print '                   MAGIC of CATAN!         '
+			print '                                           '
+			print '           ********************************'
+			print ''
+			print '   Whoever possesses this magic is Lord of the Land.'
+			print ''
+			print '                --VICTORY is YOURS!--       '
+			for each in range (10):
+				print ''
+			quit()
+		else:
+			print 'You do not have a box to unlock.'
+
+	do_Unlock = do_unlock
+
 	# Pick something up off the ground
 	def do_take(self, arg):
 
@@ -317,25 +437,57 @@ class explore(cmd.Cmd):
 			print 'Take what?'
 			return
 
+		if itemToTake == 'carcass':
+			for each in range (30):
+				print ''
+			print '   Why would you pick up a rotting carcass?'
+			print ''
+			print '        You just died of listeriosis.'
+			print ''
+			print '              == Darwin Award =='
+			for each in range (10):
+				print ''
+			quit()
+			
+
 		cantTake = False
 
-		# Need Paddle before picking up boat
+		# Need Paddle/Key before picking up boat/box
 		if 'Paddle' in inventory:
 			resources['Boat']['Takeable'] = True
-			for item in getAllItems(itemToTake, hexes[location][Ground]):
-				print 'You take %s.' % (resources[item][Name])
-				hexes[location][Ground].remove(item)
-				inventory.append(item)
-				return
+			if 'Key' in inventory:
+				resources['Box']['Takeable'] = True
+				for item in getAllItems(itemToTake, hexes[location][Ground]):
+					print 'You take %s.' % (resources[item][Name])
+					hexes[location][Ground].remove(item)
+					inventory.append(item)
+					return
+			else:
+				for item in getAllItems(itemToTake, hexes[location][Ground]):
+					print 'You take %s.' % (resources[item][Name])
+					hexes[location][Ground].remove(item)
+					inventory.append(item)
+					return
 		else:
-			for item in getAllItems(itemToTake, hexes[location][Ground]):
-				if resources[item].get(Takeable, True) == False:
-					cantTake = True
-					continue
-				print 'You take %s.' % (resources[item][Name])
-				hexes[location][Ground].remove(item)
-				inventory.append(item)
-				return
+			if 'Key' in inventory:
+				resources['Box']['Takeable'] = True
+				for item in getAllItems(itemToTake, hexes[location][Ground]):
+					if resources[item].get(Takeable, True) == False:
+						cantTake = True
+						continue
+					print 'You take %s.' % (resources[item][Name])
+					hexes[location][Ground].remove(item)
+					inventory.append(item)
+					return
+			else:
+				for item in getAllItems(itemToTake, hexes[location][Ground]):
+					if resources[item].get(Takeable, True) == False:
+						cantTake = True
+						continue
+					print 'You take %s.' % (resources[item][Name])
+					hexes[location][Ground].remove(item)
+					inventory.append(item)
+					return
 
 		if cantTake:
 			print 'You cannot take this now.'
@@ -343,7 +495,7 @@ class explore(cmd.Cmd):
 			print 'That is not on the ground.'
 
 	def do_drop(self, arg):
-
+		# Drop An Item
 		itemToDrop = arg.lower()
 
 		invDescWords = getAllWords(inventory)
