@@ -3,12 +3,14 @@ North = 'north'
 South = 'south'
 East = 'east'
 West = 'west'
-Sea = 'sea'
+Port = 'port'
+Lighthouse = 'lighthouse'
 Ground = 'ground'
 Desc = 'desc'
 Name = 'name'
 Inventory = 'inventory'
 Takeable = 'takeable'
+Word = 'word'
 
 # Dictionary for Terrain Hexes
 hexes = {
@@ -29,7 +31,7 @@ hexes = {
 		Description: '-a bell tower tolls the hour- This city is a beauty of human ingenuity.',
 		East: 'Great Northern Mountains',
 		South: 'Wheat Fields',
-		Sea: 'Sea of Catan',
+		Port: 'Sea of Catan',
 		Ground: ['Boat']},
 	'Ore Mines': {
 		Description: 'Deep in the Earth, cold, dank air wafts upward. Angry dwarves are known to inhabit these dark halls.',
@@ -73,16 +75,33 @@ hexes = {
 		Ground: ['Water']},
 	'North Sea of Catan': {
 		Description: 'A true sailor!',
+		North: 'Dense Fog',
 		South: 'Sea of Catan',
+		East: 'Fog',
+		West: 'Fog',
 		Ground: ['Water']},
 	'West Sea of Catan': {
 		Description: 'A true sailor',
+		North: 'Fog',
+		South: 'Fog',
 		East: 'Sea of Catan',
+		West: 'Fog',
 		Ground: ['Water']},
 	'East Sea of Catan': {
 		Description: 'A true sailor',
+		North: 'Fog',
+		South: 'Fog',
+		East: 'Fog',
 		West: 'Sea of Catan',
 		Ground: ['Water']},
+	'Dense Fog': {
+		Description: 'You just discovered a secret island hidden by the fog!',
+		South: 'North Sea of Catan',
+		Ground: ['Gold']},
+	'Fog' : {
+		Description: 'You just entered a dense patch of fog.',
+		Lighthouse: 'Sea of Catan',
+		Ground: ['Nothing']},
 	}
 
 # Dictionary for Terrain Resources
@@ -90,43 +109,56 @@ resources = {
 	'Boat': {
 		Name: 'a Row Boat',
 		Desc: 'Use this to travel the seas...but what good is a boat without a paddle?',
-		Takeable: False},
+		Takeable: False,
+		Word: ['boat']},
 	'Paddle': {
 		Name: 'a Paddle',
-		Desc: 'You found a paddle! Take it, now, and go find a boat!'},
+		Desc: 'You found a paddle! Take it, now, and go find a boat!',
+		Word: ['paddle']},
 	'Carcass': {
 		Name: 'a Carcass',
-		Desc: 'Whatever this was, it didn\'t survive here. You probably won\'t either.'},
+		Desc: 'Whatever this was, it didn\'t survive here. You probably won\'t either.',
+		Word: ['carcass']},
 	'Brick': {
 		Name: 'a Brick',
-		Desc: 'Sun and Earth. Use these to build.'},
+		Desc: 'Sun and Earth. Use these to build.',
+		Word: ['brick']},
 	'Ore': {
 		Name: 'a Chunk of Ore',
-		Desc: 'Forged deep in the Earth, Ore is used to make tools...and weapons.'},
+		Desc: 'Forged deep in the Earth, Ore is used to make tools...and weapons.',
+		Word: ['ore']},
 	'Wheat': {
 		Name: 'a Shaff of Wheat',
-		Desc: 'Born of the land to feed your hunger'},
+		Desc: 'Born of the land to feed your hunger',
+		Word: ['wheat']},
 	'Wood': {
 		Name: 'a Pile of Wood',
-		Desc: 'Wood is versatile. Use it to build, cook, or fight.'},
+		Desc: 'Wood is versatile. Use it to build, cook, or fight.',
+		Word: ['wood']},
 	'Sheep': {
 		Name: 'a Lost Sheep',
-		Desc: 'Used it for wool or food. Sheep are valuable resources.'},
+		Desc: 'Used it for wool or food. Sheep are valuable resources.',
+		Word: ['sheep', 'lost sheep']},
 	'Gold': {
 		Name: 'a Gold Coin',
-		Desc: 'This is currency of the land. Beware...others value it just as much as you!'},
+		Desc: 'This is currency of the land. Beware...others value it just as much as you!',
+		Word: ['gold', 'gold coin']},
 	'Map': {
 		Name: 'a Map',
-		Desc: 'This is a map of Catan'},
+		Desc: 'This is a map of Catan',
+		Word: ['map']},
 	'Sword': {
 		Name: 'a Sword',
-		Desc: 'A simple form of protection. Take this to be safe.'},
+		Desc: 'A simple form of protection. Take this to be safe.',
+		Word: ['sword']},
 	'Nothing': {
 		Name: 'Nothing',
-		Desc: 'Travel to another region of Catan to find more items.'},
+		Desc: 'Travel to another region of Catan to find more items.',
+		Word: ['nothing']},
 	'Water': {
 		Name: 'Water',
-		Desc: 'Actually, there is water everywhere!'},
+		Desc: 'Actually, there is water everywhere!',
+		Word: ['water']},
 	}
 
 # Default Location and Inventory
@@ -155,12 +187,12 @@ def hexName(loc):
 	
 	# Surrounding Hexes
 	exit = []
-	for direction in (North, South, East, West, Sea):
+	for direction in (North, South, East, West, Port):
 		if direction in hexes[loc].keys():
 			exit.append(direction.title())
 	print''
 	if showExits:
-		for direction in (North, South, East, West, Sea):
+		for direction in (North, South, East, West, Port):
 			if direction in hexes[location]:
 				print'%s: %s' % (direction.title(), hexes[location][direction])
 	else:
@@ -172,18 +204,43 @@ def moveDirection(direction):
 
 	if direction in hexes[location]:
 		os.system('cls')
+		os.system('clear')
 		print 'You traveled to the %s.' % direction
 		location = hexes[location][direction]
 		hexName(location)
 	else:
 		print 'You need to enter or exit the seas through a port.'
 
-def getAllItems(desc, itemList):
+def getAllWords(itemList):
+	# Returns Inventory Description for each item
+	itemList = list(set(itemList))
+	descWords = []
+	for item in itemList:
+		descWords.extend(resources[item][Word])
+	return list(set(descWords))
+
+def getAllFirstWords(itemList):
+
+	itemList = list(set(itemList))
+	descWords = []
+	for item in itemList:
+		descWords.append(resources[item][Word][0])
+	return list(set(descWords))
+
+def getFirstItems(word, itemList):
+	# Gets one item on the ground
+	itemList = list(set(itemList))
+	for item in itemList:
+		if word in resources[item][Word]:
+			return item
+	return None
+
+def getAllItems(word, itemList):
 	# Gets all items on the ground
 	itemList = list(set(itemList))
 	matchingItems = []
 	for item in itemList:
-		if desc in resources[item][Name]:
+		if word in resources[item][Word]:
 			matchingItems.append(item)
 	return matchingItems
 
@@ -210,9 +267,12 @@ class explore(cmd.Cmd):
 	def do_west(self, arg):
 		moveDirection('west')
 
-	def do_sea(self, arg):
+	def do_lighthouse(self, arg):
+		moveDirection('lighthouse')
+
+	def do_port(self, arg):
 		if 'Boat' in inventory:
-			moveDirection('sea')
+			moveDirection('port')
 		else:
 			print 'You need a boat to enter the seas.'
 
@@ -221,7 +281,8 @@ class explore(cmd.Cmd):
 	do_South = do_south
 	do_East = do_east
 	do_West = do_west
-	do_Sea = do_sea
+	do_Port = do_port
+	do_Lighthouse = do_lighthouse
 
 	# View Inventory
 	def do_inventory(self, arg):
@@ -250,7 +311,7 @@ class explore(cmd.Cmd):
 
 		itemToTake = arg.lower()
 
-		if itemToTake == ' ':
+		if itemToTake == '':
 			print 'Take what?'
 			return
 
@@ -260,7 +321,6 @@ class explore(cmd.Cmd):
 		if 'Paddle' in inventory:
 			resources['Boat']['Takeable'] = True
 			for item in getAllItems(itemToTake, hexes[location][Ground]):
-				
 				print 'You take %s.' % (resources[item][Name])
 				hexes[location][Ground].remove(item)
 				inventory.append(item)
@@ -279,3 +339,19 @@ class explore(cmd.Cmd):
 			print 'You cannot take this now.'
 		else:
 			print 'That is not on the ground.'
+
+	def do_drop(self, arg):
+
+		itemToDrop = arg.lower()
+
+		invDescWords = getAllWords(inventory)
+
+		if itemToDrop not in invDescWords:
+			print 'What would you like to drop?'
+			return
+
+		item = getFirstItems(itemToDrop, inventory)
+		if item != None:
+			print 'You drop %s.' % (resources[item][Name])
+			inventory.remove(item)
+			hexes[location][Ground].append(item)
